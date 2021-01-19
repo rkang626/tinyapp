@@ -50,7 +50,7 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
-  res.send("Ok");
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.listen(PORT, () => {
