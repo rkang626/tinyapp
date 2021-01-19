@@ -42,7 +42,11 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL: req.params.shortURL,
     longURL
   };
-  res.render("urls_show", templateVars);
+  if (longURL) {
+    res.render("urls_show", templateVars);
+  } else {
+    res.render("urls_new");
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
