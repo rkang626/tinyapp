@@ -45,15 +45,15 @@ const getNextID = function(object) {
   return lastID + 1;
 };
 
-const checkEmailExist = function(email) {
+const getUserByEmail = function(email) {
   const ids = Object.keys(userDatabase);
   for (id of ids) {
     if (userDatabase[id]["email"] === email) {
-      return true;
+      return userDatabase[id];
     }
-  }
+  };
   return false;
-};
+}
 
 // general GET endpoints
 
@@ -138,7 +138,7 @@ app.post("/register", (req, res) => {
     password
   };
 
-  if (!email || !password || checkEmailExist(email)) {
+  if (!email || !password || getUserByEmail(email)) {
     res.status(400).end();
   } else {
     userDatabase[id] = newUser;
@@ -148,8 +148,15 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect("/urls");
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (getUserByEmail(email) && password === getUserByEmail(email)["password"]) {
+    res.cookie('user_id', getUserByEmail(email)["id"]);
+    res.redirect("/urls");
+  } else {
+    res.status(403).end();
+  }
 });
 
 app.post("/logout", (req, res) => {
