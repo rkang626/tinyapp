@@ -37,7 +37,17 @@ const getNextID = function(object) {
     return Math.max(a, b);
   });
   return lastID + 1;
-}
+};
+
+const checkEmailExist = function(email) {
+  const ids = Object.keys(users);
+  for (id of ids) {
+    if (users[id]["email"] === email) {
+      return true;
+    }
+  }
+  return false;
+};
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -119,7 +129,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect("/urls");
 });
 
@@ -132,9 +142,14 @@ app.post("/register", (req, res) => {
     email,
     password
   };
-  users[id] = newUser;
-  res.cookie('user_id', id);
-  res.redirect(`/urls`);
+
+  if (!email || !password || checkEmailExist(email)) {
+    res.status(400).end();
+  } else {
+    users[id] = newUser;
+    res.cookie('user_id', id);
+    res.redirect(`/urls`);
+  }
 });
 
 app.listen(PORT, () => {
