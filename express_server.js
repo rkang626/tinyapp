@@ -47,49 +47,53 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+app.get("/register", (req, res) => {
+  const userID = req.cookies["user_id"];
+  const templateVars = { 
+    user: users[userID]
+  };
+  res.render("user_registration", templateVars);
+});
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
 app.get("/urls", (req, res) => {
+  const userID = req.cookies["user_id"];
   const templateVars = { 
-    username: req.cookies["username"],
+    user: users[userID],
     urls: urlDatabase 
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
+  const userID = req.cookies["user_id"];
   const templateVars = { 
-    username: req.cookies["username"] 
+    user: users[userID]
   };
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  const userID = req.cookies["user_id"];
   const longURL = urlDatabase[req.params.shortURL];
   const templateVars = {
-    username: req.cookies["username"],
+    user: users[userID],
     shortURL: req.params.shortURL,
     longURL
   };
   if (longURL) {
     res.render("urls_show", templateVars);
   } else {
-    res.render("urls_new", templateVars);
+    res.render("urls_new", templateVars); // if URL doesn't exist
   }
 });
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
-});
-
-app.get("/register", (req, res) => {
-  const templateVars = { 
-    username: req.cookies["username"] 
-  };
-  res.render("user_registration", templateVars);
 });
 
 app.post("/urls", (req, res) => {
