@@ -59,7 +59,17 @@ const getUserByEmail = function(email) {
     }
   };
   return false;
-}
+};
+
+const urlsForUser = function(id) {
+  const userURLs = {};
+  for (const url in urlDatabase) {
+    if (urlDatabase[url]["userID"] === parseInt(id)) {
+      userURLs[url] = urlDatabase[url];
+    }
+  };
+  return userURLs;
+};
 
 // general GET endpoints
 
@@ -99,9 +109,14 @@ app.get("/urls", (req, res) => {
   const userID = req.cookies["user_id"];
   const templateVars = { 
     user: userDatabase[userID],
-    urls: urlDatabase
+    urls: urlsForUser(userID)
   };
-  res.render("urls_index", templateVars);
+
+  if (userID) {
+    res.render("urls_index", templateVars);
+  } else {
+    res.render("access_denied", templateVars);
+  }
 });
 
 app.get("/urls/new", (req, res) => {
@@ -113,22 +128,28 @@ app.get("/urls/new", (req, res) => {
   if (userID) {
     res.render("urls_new", templateVars);
   } else {
-    res.render("user_login", templateVars);
+    res.render("access_denied", templateVars);
   }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.cookies["user_id"];
   const longURL = urlDatabase[req.params.shortURL]["longURL"];
+  const shortURL = req.params.shortURL;
   const templateVars = {
     user: userDatabase[userID],
-    shortURL: req.params.shortURL,
+    shortURL,
     longURL
   };
-  if (longURL) {
-    res.render("urls_show", templateVars);
+
+  if (userID && urlDatabase[shortURL]["userID"] === parseInt(userID)) {
+    if (longURL) {
+      res.render("urls_show", templateVars);
+    } else {
+      res.render("urls_new", templateVars); // if URL doesn't exist
+    }
   } else {
-    res.render("urls_new", templateVars); // if URL doesn't exist
+    res.render("access_denied", templateVars);
   }
 });
 
