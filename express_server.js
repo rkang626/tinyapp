@@ -214,16 +214,28 @@ app.post("/urls", (req, res) => {
 
 // endpoint for deleting an existing URL
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  console.log(urlDatabase);
-  res.redirect("/urls");
+  const userID = req.cookies["user_id"];
+
+  if (userID && urlDatabase[shortURL]["userID"] === parseInt(userID)) {
+    delete urlDatabase[req.params.shortURL];
+    console.log(urlDatabase);
+    res.redirect("/urls");
+  } else {
+    res.status(403).end();
+  }
 });
 
 // endpoint for updating an existing URL
 app.post("/urls/:shortURL/update", (req, res) => {
-  urlDatabase[req.params.shortURL]["longURL"] = req.body.longURL;
-  console.log(urlDatabase);
-  res.redirect("/urls");
+  const userID = req.cookies["user_id"];
+
+  if (userID && urlDatabase[shortURL]["userID"] === parseInt(userID)) {
+    urlDatabase[req.params.shortURL]["longURL"] = req.body.longURL;
+    console.log(urlDatabase);
+    res.redirect("/urls");
+  } else {
+    res.status(403).end();
+  }
 });
 
 // listening
