@@ -14,9 +14,30 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = { 
+  "1": {
+    id: 1, 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "2": {
+    id: 2, 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+};
+
 const generateRandomString = function() {
   return Math.random().toString(36).substring(2,8);
 };
+
+const getNextID = function(object) {
+  const ids = Object.keys(object);
+  const lastID = ids.reduce((a, b) => {
+    return Math.max(a, b);
+  });
+  return lastID + 1;
+}
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -72,7 +93,6 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
@@ -97,6 +117,20 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   res.clearCookie('username');
   res.redirect("/urls");
+});
+
+app.post("/register", (req, res) => {
+  const id = getNextID(users);
+  const email = req.body.email;
+  const password = req.body.password;
+  const newUser = {
+    id,
+    email,
+    password
+  };
+  users[id] = newUser;
+  res.cookie('user_id', id);
+  res.redirect(`/urls`);
 });
 
 app.listen(PORT, () => {
