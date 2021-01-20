@@ -65,6 +65,14 @@ app.get("/register", (req, res) => {
   res.render("user_registration", templateVars);
 });
 
+app.get("/login", (req, res) => {
+  const userID = req.cookies["user_id"];
+  const templateVars = { 
+    user: users[userID]
+  };
+  res.render("user_login", templateVars);
+});
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
