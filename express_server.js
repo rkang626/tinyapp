@@ -14,8 +14,14 @@ app.use(cookieParser());
 // create database
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: 1
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: 2
+  }
 };
 
 const userDatabase = { 
@@ -53,7 +59,17 @@ const getUserByEmail = function(email) {
     }
   };
   return false;
-}
+};
+
+const urlsForUser = function(id) {
+  const userURLs = {};
+  for (const url in urlDatabase) {
+    if (urlDatabase[url]["userID"] === parseInt(id)) {
+      userURLs[url] = urlDatabase[url];
+    }
+  };
+  return userURLs;
+};
 
 // general GET endpoints
 
@@ -93,9 +109,14 @@ app.get("/urls", (req, res) => {
   const userID = req.cookies["user_id"];
   const templateVars = { 
     user: userDatabase[userID],
-    urls: urlDatabase 
+    urls: urlsForUser(userID)
   };
-  res.render("urls_index", templateVars);
+
+  if (userID) {
+    res.render("urls_index", templateVars);
+  } else {
+    res.render("access_denied", templateVars);
+  }
 });
 
 app.get("/urls/new", (req, res) => {
@@ -103,26 +124,37 @@ app.get("/urls/new", (req, res) => {
   const templateVars = { 
     user: userDatabase[userID]
   };
-  res.render("urls_new", templateVars);
+
+  if (userID) {
+    res.render("urls_new", templateVars);
+  } else {
+    res.render("access_denied", templateVars);
+  }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.cookies["user_id"];
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL]["longURL"];
+  const shortURL = req.params.shortURL;
   const templateVars = {
     user: userDatabase[userID],
-    shortURL: req.params.shortURL,
+    shortURL,
     longURL
   };
-  if (longURL) {
-    res.render("urls_show", templateVars);
+
+  if (userID && urlDatabase[shortURL]["userID"] === parseInt(userID)) {
+    if (longURL) {
+      res.render("urls_show", templateVars);
+    } else {
+      res.render("urls_new", templateVars); // if URL doesn't exist
+    }
   } else {
-    res.render("urls_new", templateVars); // if URL doesn't exist
+    res.render("access_denied", templateVars);
   }
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL]["longURL"];
   res.redirect(longURL);
 });
 
@@ -166,21 +198,44 @@ app.post("/logout", (req, res) => {
 
 // URL POST endpoints
 
+// endpoint for creating a new URL
 app.post("/urls", (req, res) => {
+  const userID = req.cookies["user_id"]
   const longURL = req.body.longURL;
+  const newURL = {
+    longURL,
+    userID
+  };
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL] = newURL;
+  console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
 });
 
+// endpoint for deleting an existing URL
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+  const userID = req.cookies["user_id"];
+
+  if (userID && urlDatabase[shortURL]["userID"] === parseInt(userID)) {
+    delete urlDatabase[req.params.shortURL];
+    console.log(urlDatabase);
+    res.redirect("/urls");
+  } else {
+    res.status(403).end();
+  }
 });
 
+// endpoint for updating an existing URL
 app.post("/urls/:shortURL/update", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
-  res.redirect("/urls");
+  const userID = req.cookies["user_id"];
+
+  if (userID && urlDatabase[shortURL]["userID"] === parseInt(userID)) {
+    urlDatabase[req.params.shortURL]["longURL"] = req.body.longURL;
+    console.log(urlDatabase);
+    res.redirect("/urls");
+  } else {
+    res.status(403).end();
+  }
 });
 
 // listening
