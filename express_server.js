@@ -103,7 +103,12 @@ app.get("/urls/new", (req, res) => {
   const templateVars = { 
     user: userDatabase[userID]
   };
-  res.render("urls_new", templateVars);
+
+  if (userID) {
+    res.render("urls_new", templateVars);
+  } else {
+    res.render("user_login", templateVars);
+  }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -166,6 +171,7 @@ app.post("/logout", (req, res) => {
 
 // URL POST endpoints
 
+// endpoint for creating a new URL
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
@@ -173,11 +179,13 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+// endpoint for deleting an existing URL
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
 
+// endpoint for updating an existing URL
 app.post("/urls/:shortURL/update", (req, res) => {
   urlDatabase[req.params.shortURL] = req.body.longURL;
   res.redirect("/urls");
