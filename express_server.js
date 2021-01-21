@@ -65,7 +65,11 @@ app.get("/register", (req, res) => {
   const templateVars = {
     user: userDatabase[userID]
   };
-  res.render("user_registration", templateVars);
+  if (userID) {
+    res.redirect("/urls");
+  } else {
+    res.render("user_registration", templateVars);
+  }
 });
 
 // render the user login page
@@ -74,7 +78,12 @@ app.get("/login", (req, res) => {
   const templateVars = {
     user: userDatabase[userID]
   };
-  res.render("user_login", templateVars);
+  if (userID) {
+    res.redirect("/urls");
+  } else {
+    res.render("user_login", templateVars);
+  }
+  
 });
 
 // URL GET endpoints
@@ -128,7 +137,7 @@ app.get("/urls/:shortURL", (req, res) => {
   };
 
   if (!longURL) {
-    res.render("bad_url", templateVars);
+    res.redirect("/bad_url");
   } else {
     if (userID && urlDatabase[shortURL]["userID"] === parseInt(userID)) {
       res.render("urls_show", templateVars);
@@ -140,8 +149,15 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // direct all users to the corresponding "longURL"
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL]["longURL"];
-  res.redirect(longURL);
+  let longURL = undefined;
+  if (urlDatabase[req.params.shortURL]) {
+    longURL = urlDatabase[req.params.shortURL]["longURL"];
+  }
+  if (!longURL) {
+    res.redirect("/bad_url");
+  } else {
+    res.redirect(longURL);
+  }
 });
 
 // GET endpoints for error pages
