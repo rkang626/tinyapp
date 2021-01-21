@@ -177,7 +177,6 @@ app.post("/register", (req, res) => {
   } else {
     userDatabase[id] = newUser;
     res.cookie('user_id', id);
-    console.log(userDatabase);
     res.redirect(`/urls`);
   }
 });
