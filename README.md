@@ -4,14 +4,16 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 This was a project built as part of the awesome Web Development bootcamp offered by [Lighthouse Labs](https://www.lighthouselabs.ca/).
 
-
+!["Lighthouse Logo"](https://github.com/rkang626/tinyapp/blob/final-cleanup/docs/lhl_logo.jpg)
 
 
 
 ## Final Product
 
-!["screenshot description"](#)
-!["screenshot description"](#)
+!["User Registration Page"](https://github.com/rkang626/tinyapp/blob/final-cleanup/docs/register_page.png)
+!["Create a URL"](https://github.com/rkang626/tinyapp/blob/final-cleanup/docs/create_url.png)
+!["See all URLs"](https://github.com/rkang626/tinyapp/blob/final-cleanup/docs/my_urls.png)
+!["See URL page"](https://github.com/rkang626/tinyapp/blob/final-cleanup/docs/url_page.png)
 
 ## Dependencies
 
