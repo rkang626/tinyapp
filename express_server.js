@@ -1,12 +1,12 @@
 const express = require("express");
-const cookieSession = require('cookie-session');
+const cookieSession = require("cookie-session");
 const bodyParser = require("body-parser");
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 
-const { generateRandomString } = require('./helpers.js');
-const { getNextID } = require('./helpers.js');
-const { getUserByEmail } = require('./helpers.js');
-const { urlsForUser } = require('./helpers.js');
+const { generateRandomString } = require("./helpers.js");
+const { getNextID } = require("./helpers.js");
+const { getUserByEmail } = require("./helpers.js");
+const { urlsForUser } = require("./helpers.js");
 
 const app = express();
 const PORT = 8080;
@@ -16,9 +16,9 @@ const PORT = 8080;
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
-  name: 'session',
+  name: "session",
   keys: ["secret-key"]
-}))
+}));
 
 // create database
 
@@ -33,15 +33,15 @@ const urlDatabase = {
   }
 };
 
-const userDatabase = { 
+const userDatabase = {
   "1": {
-    id: 1, 
-    email: "user@example.com", 
+    id: 1,
+    email: "user@example.com",
     hashedPassword: bcrypt.hashSync("purple-monkey-dinosaur", 10)
   },
- "2": {
-    id: 2, 
-    email: "user2@example.com", 
+  "2": {
+    id: 2,
+    email: "user2@example.com",
     hashedPassword: bcrypt.hashSync("dishwasher-funk", 10)
   }
 };
@@ -61,7 +61,7 @@ app.get("/hello", (req, res) => {
 // render the user registration page
 app.get("/register", (req, res) => {
   const userID = req.session["user_id"];
-  const templateVars = { 
+  const templateVars = {
     user: userDatabase[userID]
   };
   res.render("user_registration", templateVars);
@@ -70,7 +70,7 @@ app.get("/register", (req, res) => {
 // render the user login page
 app.get("/login", (req, res) => {
   const userID = req.session["user_id"];
-  const templateVars = { 
+  const templateVars = {
     user: userDatabase[userID]
   };
   res.render("user_login", templateVars);
@@ -86,7 +86,7 @@ app.get("/urls.json", (req, res) => {
 // render the "My URLs" page if user is logged in, otherwise render the "Access Denied" page
 app.get("/urls", (req, res) => {
   const userID = req.session["user_id"];
-  const templateVars = { 
+  const templateVars = {
     user: userDatabase[userID],
     urls: urlsForUser(userID, urlDatabase)
   };
@@ -101,7 +101,7 @@ app.get("/urls", (req, res) => {
 // render the "Create New URL" page if user is logged in, otherwise render the "Access Denied" page
 app.get("/urls/new", (req, res) => {
   const userID = req.session["user_id"];
-  const templateVars = { 
+  const templateVars = {
     user: userDatabase[userID]
   };
 
@@ -144,7 +144,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get("/access_denied", (req, res) => {
   const userID = req.session["user_id"];
-  const templateVars = { 
+  const templateVars = {
     user: userDatabase[userID]
   };
   res.render("access_denied", templateVars);
@@ -152,7 +152,7 @@ app.get("/access_denied", (req, res) => {
 
 app.get("/register_error", (req, res) => {
   const userID = req.session["user_id"];
-  const templateVars = { 
+  const templateVars = {
     user: userDatabase[userID]
   };
   res.render("register_error", templateVars);
@@ -160,7 +160,7 @@ app.get("/register_error", (req, res) => {
 
 app.get("/login_error", (req, res) => {
   const userID = req.session["user_id"];
-  const templateVars = { 
+  const templateVars = {
     user: userDatabase[userID]
   };
   res.render("login_error", templateVars);
@@ -206,7 +206,7 @@ app.post("/login", (req, res) => {
 
 // clear user session when user loges out. redirect to the login page.
 app.post("/logout", (req, res) => {
-  req.session = null
+  req.session = null;
   res.redirect("/login");
 });
 
@@ -214,7 +214,7 @@ app.post("/logout", (req, res) => {
 
 // add new URL to the urlDatabase
 app.post("/urls", (req, res) => {
-  const userID = req.session["user_id"]
+  const userID = req.session["user_id"];
   const longURL = req.body.longURL;
   const newURL = {
     longURL,
@@ -229,7 +229,7 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session["user_id"];
 
-  if (userID && urlDatabase[shortURL]["userID"] === parseInt(userID)) {
+  if (userID && urlDatabase[req.params.shortURL]["userID"] === parseInt(userID)) {
     delete urlDatabase[req.params.shortURL];
     console.log(urlDatabase);
     res.redirect("/urls");
@@ -242,7 +242,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/urls/:shortURL/update", (req, res) => {
   const userID = req.session["user_id"];
 
-  if (userID && urlDatabase[shortURL]["userID"] === parseInt(userID)) {
+  if (userID && urlDatabase[req.params.shortURL]["userID"] === parseInt(userID)) {
     urlDatabase[req.params.shortURL]["longURL"] = req.body.longURL;
     console.log(urlDatabase);
     res.redirect("/urls");

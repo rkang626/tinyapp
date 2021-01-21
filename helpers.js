@@ -16,11 +16,11 @@ const getNextID = function(object) {
 
 const getUserByEmail = function(email, database) {
   const ids = Object.keys(database);
-  for (id of ids) {
+  for (const id of ids) {
     if (database[id]["email"] === email) {
       return database[id];
     }
-  };
+  }
   return undefined;
 };
 
@@ -30,7 +30,7 @@ const urlsForUser = function(id, database) {
     if (database[url]["userID"] === parseInt(id)) {
       userURLs[url] = database[url];
     }
-  };
+  }
   return userURLs;
 };
 
