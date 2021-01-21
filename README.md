@@ -30,6 +30,7 @@ Users can edit links that they created.
 - bcryptjs
 - body-parser
 - cookie-session
+- method-override
 
 
 ## Getting Started

@@ -2,6 +2,7 @@ const express = require("express");
 const cookieSession = require("cookie-session");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcryptjs");
+const methodOverride = require("method-override");
 
 const { generateRandomString } = require("./helpers.js");
 const { getNextID } = require("./helpers.js");
@@ -19,6 +20,7 @@ app.use(cookieSession({
   name: "session",
   keys: ["secret-key"]
 }));
+app.use(methodOverride("_method"));
 
 // create database
 
@@ -254,7 +256,7 @@ app.post("/urls", (req, res) => {
 });
 
 // delete the selected URL. user must be logged in and own the URL.
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL", (req, res) => {
   const userID = req.session["user_id"];
 
   if (userID && urlDatabase[req.params.shortURL]["userID"] === parseInt(userID)) {
@@ -266,7 +268,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 // updating the selected URL. user must be logged in and own the URL.
-app.post("/urls/:shortURL/update", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
   const userID = req.session["user_id"];
 
   if (userID && urlDatabase[req.params.shortURL]["userID"] === parseInt(userID)) {
