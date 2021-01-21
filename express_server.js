@@ -49,11 +49,12 @@ const userDatabase = {
 // general GET endpoints for root pages
 
 app.get("/", (req, res) => {
-  res.send("<a href='/register'>Create an account.</a>");
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<a href='/register'>Create an account.</a>");
+  const userID = req.session["user_id"];
+  if (userID) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // user GET endpoints
@@ -108,14 +109,17 @@ app.get("/urls/new", (req, res) => {
   if (userID) {
     res.render("urls_new", templateVars);
   } else {
-    res.redirect("/access_denied");
+    res.redirect("/login");
   }
 });
 
 // render the /:shortURL page if user is logged in and user created the URL, otherwise render the "Access Denied" page. if URL does not exist then render the "Create New URL" page.
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session["user_id"];
-  const longURL = urlDatabase[req.params.shortURL]["longURL"];
+  let longURL = undefined;
+  if (urlDatabase[req.params.shortURL]) {
+    longURL = urlDatabase[req.params.shortURL]["longURL"];
+  }
   const shortURL = req.params.shortURL;
   const templateVars = {
     user: userDatabase[userID],
@@ -123,14 +127,14 @@ app.get("/urls/:shortURL", (req, res) => {
     longURL
   };
 
-  if (userID && urlDatabase[shortURL]["userID"] === parseInt(userID)) {
-    if (longURL) {
+  if (!longURL) {
+    res.render("bad_url", templateVars);
+  } else {
+    if (userID && urlDatabase[shortURL]["userID"] === parseInt(userID)) {
       res.render("urls_show", templateVars);
     } else {
-      res.render("urls_new", templateVars); // if URL doesn't exist
+      res.redirect("/access_denied");
     }
-  } else {
-    res.redirect("/access_denied");
   }
 });
 
@@ -164,6 +168,14 @@ app.get("/login_error", (req, res) => {
     user: userDatabase[userID]
   };
   res.render("login_error", templateVars);
+});
+
+app.get("/bad_url", (req, res) => {
+  const userID = req.session["user_id"];
+  const templateVars = {
+    user: userDatabase[userID]
+  };
+  res.render("bad_url", templateVars);
 });
 
 // user POST endpoints
