@@ -3,6 +3,11 @@ const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
 
+const { generateRandomString } = require('./helpers.js');
+const { getNextID } = require('./helpers.js');
+const { getUserByEmail } = require('./helpers.js');
+const { urlsForUser } = require('./helpers.js');
+
 const app = express();
 const PORT = 8080;
 
@@ -39,40 +44,6 @@ const userDatabase = {
     email: "user2@example.com", 
     hashedPassword: bcrypt.hashSync("dishwasher-funk", 10)
   }
-};
-
-// create helper functions
-
-const generateRandomString = function() {
-  return Math.random().toString(36).substring(2,8);
-};
-
-const getNextID = function(object) {
-  const ids = Object.keys(object);
-  const lastID = ids.reduce((a, b) => {
-    return Math.max(a, b);
-  });
-  return lastID + 1;
-};
-
-const getUserByEmail = function(email) {
-  const ids = Object.keys(userDatabase);
-  for (id of ids) {
-    if (userDatabase[id]["email"] === email) {
-      return userDatabase[id];
-    }
-  };
-  return false;
-};
-
-const urlsForUser = function(id) {
-  const userURLs = {};
-  for (const url in urlDatabase) {
-    if (urlDatabase[url]["userID"] === parseInt(id)) {
-      userURLs[url] = urlDatabase[url];
-    }
-  };
-  return userURLs;
 };
 
 // general GET endpoints
@@ -113,7 +84,7 @@ app.get("/urls", (req, res) => {
   const userID = req.session["user_id"];
   const templateVars = { 
     user: userDatabase[userID],
-    urls: urlsForUser(userID)
+    urls: urlsForUser(userID, urlDatabase)
   };
 
   if (userID) {
@@ -175,7 +146,7 @@ app.post("/register", (req, res) => {
     hashedPassword
   };
 
-  if (!email || !password || getUserByEmail(email)) {
+  if (!email || !password || getUserByEmail(email, userDatabase)) {
     res.status(400).end();
   } else {
     userDatabase[id] = newUser;
@@ -188,8 +159,8 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  if (getUserByEmail(email) && bcrypt.compareSync(password, getUserByEmail(email)["hashedPassword"])) {
-    req.session["user_id"] = getUserByEmail(email)["id"];
+  if (getUserByEmail(email, userDatabase) && bcrypt.compareSync(password, getUserByEmail(email, userDatabase)["hashedPassword"])) {
+    req.session["user_id"] = getUserByEmail(email, userDatabase)["id"];
     res.redirect("/urls");
   } else {
     res.status(403).end();
