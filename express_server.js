@@ -46,18 +46,19 @@ const userDatabase = {
   }
 };
 
-// general GET endpoints
+// general GET endpoints for root pages
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.send("<a href='/register'>Create an account.</a>");
 });
 
 app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+  res.send("<a href='/register'>Create an account.</a>");
 });
 
 // user GET endpoints
 
+// render the user registration page
 app.get("/register", (req, res) => {
   const userID = req.session["user_id"];
   const templateVars = { 
@@ -66,6 +67,7 @@ app.get("/register", (req, res) => {
   res.render("user_registration", templateVars);
 });
 
+// render the user login page
 app.get("/login", (req, res) => {
   const userID = req.session["user_id"];
   const templateVars = { 
@@ -76,10 +78,12 @@ app.get("/login", (req, res) => {
 
 // URL GET endpoints
 
+// show URL data in JSON format
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+// render the "My URLs" page if user is logged in, otherwise render the "Access Denied" page
 app.get("/urls", (req, res) => {
   const userID = req.session["user_id"];
   const templateVars = { 
@@ -94,6 +98,7 @@ app.get("/urls", (req, res) => {
   }
 });
 
+// render the "Create New URL" page if user is logged in, otherwise render the "Access Denied" page
 app.get("/urls/new", (req, res) => {
   const userID = req.session["user_id"];
   const templateVars = { 
@@ -107,6 +112,7 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
+// render the /:shortURL page if user is logged in and user created the URL, otherwise render the "Access Denied" page. if URL does not exist then render the "Create New URL" page.
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session["user_id"];
   const longURL = urlDatabase[req.params.shortURL]["longURL"];
@@ -128,6 +134,7 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 });
 
+// direct all users to the corresponding "longURL"
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL]["longURL"];
   res.redirect(longURL);
@@ -135,6 +142,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 // user POST endpoints
 
+// add new user to userDatabase after they register
 app.post("/register", (req, res) => {
   const id = getNextID(userDatabase);
   const email = req.body.email;
@@ -155,6 +163,7 @@ app.post("/register", (req, res) => {
   }
 });
 
+// create user session when user logs in. email must exist in userDatabase and password must match.
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -167,6 +176,7 @@ app.post("/login", (req, res) => {
   }
 });
 
+// clear user session when user loges out. redirect to the login page.
 app.post("/logout", (req, res) => {
   req.session = null
   res.redirect("/login");
@@ -174,7 +184,7 @@ app.post("/logout", (req, res) => {
 
 // URL POST endpoints
 
-// endpoint for creating a new URL
+// add new URL to the urlDatabase
 app.post("/urls", (req, res) => {
   const userID = req.session["user_id"]
   const longURL = req.body.longURL;
@@ -187,7 +197,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-// endpoint for deleting an existing URL
+// delete the selected URL. user must be logged in and own the URL.
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session["user_id"];
 
@@ -200,7 +210,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 });
 
-// endpoint for updating an existing URL
+// updating the selected URL. user must be logged in and own the URL.
 app.post("/urls/:shortURL/update", (req, res) => {
   const userID = req.session["user_id"];
 
