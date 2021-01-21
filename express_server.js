@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const PORT = 8080;
@@ -28,12 +29,12 @@ const userDatabase = {
   "1": {
     id: 1, 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    hashedPassword: bcrypt.hashSync("purple-monkey-dinosaur", 10)
   },
  "2": {
     id: 2, 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    hashedPassword: bcrypt.hashSync("dishwasher-funk", 10)
   }
 };
 
@@ -164,10 +165,11 @@ app.post("/register", (req, res) => {
   const id = getNextID(userDatabase);
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
   const newUser = {
     id,
     email,
-    password
+    hashedPassword
   };
 
   if (!email || !password || getUserByEmail(email)) {
@@ -175,6 +177,7 @@ app.post("/register", (req, res) => {
   } else {
     userDatabase[id] = newUser;
     res.cookie('user_id', id);
+    console.log(userDatabase);
     res.redirect(`/urls`);
   }
 });
@@ -183,7 +186,7 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  if (getUserByEmail(email) && password === getUserByEmail(email)["password"]) {
+  if (getUserByEmail(email) && bcrypt.compareSync(password, getUserByEmail(email)["hashedPassword"])) {
     res.cookie('user_id', getUserByEmail(email)["id"]);
     res.redirect("/urls");
   } else {
@@ -193,7 +196,7 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 // URL POST endpoints
