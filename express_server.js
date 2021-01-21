@@ -55,11 +55,11 @@ const getNextID = function(object) {
   return lastID + 1;
 };
 
-const getUserByEmail = function(email) {
-  const ids = Object.keys(userDatabase);
+const getUserByEmail = function(email, database) {
+  const ids = Object.keys(database);
   for (id of ids) {
-    if (userDatabase[id]["email"] === email) {
-      return userDatabase[id];
+    if (database[id]["email"] === email) {
+      return database[id];
     }
   };
   return false;
@@ -175,7 +175,7 @@ app.post("/register", (req, res) => {
     hashedPassword
   };
 
-  if (!email || !password || getUserByEmail(email)) {
+  if (!email || !password || getUserByEmail(email, userDatabase)) {
     res.status(400).end();
   } else {
     userDatabase[id] = newUser;
@@ -188,8 +188,8 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  if (getUserByEmail(email) && bcrypt.compareSync(password, getUserByEmail(email)["hashedPassword"])) {
-    req.session["user_id"] = getUserByEmail(email)["id"];
+  if (getUserByEmail(email, userDatabase) && bcrypt.compareSync(password, getUserByEmail(email, userDatabase)["hashedPassword"])) {
+    req.session["user_id"] = getUserByEmail(email, userDatabase)["id"];
     res.redirect("/urls");
   } else {
     res.status(403).end();
