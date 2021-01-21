@@ -4,10 +4,14 @@ const generateRandomString = function() {
 
 const getNextID = function(object) {
   const ids = Object.keys(object);
-  const lastID = ids.reduce((a, b) => {
-    return Math.max(a, b);
-  });
-  return lastID + 1;
+  if (ids.length > 0) {
+    const lastID = ids.reduce((a, b) => {
+      return Math.max(a, b);
+    });
+    return lastID + 1;
+  } else {
+    return 1;
+  }
 };
 
 const getUserByEmail = function(email, database) {
@@ -17,7 +21,7 @@ const getUserByEmail = function(email, database) {
       return database[id];
     }
   };
-  return false;
+  return undefined;
 };
 
 const urlsForUser = function(id, database) {
