@@ -94,7 +94,7 @@ app.get("/urls", (req, res) => {
   if (userID) {
     res.render("urls_index", templateVars);
   } else {
-    res.render("access_denied", templateVars);
+    res.redirect("/access_denied");
   }
 });
 
@@ -108,7 +108,7 @@ app.get("/urls/new", (req, res) => {
   if (userID) {
     res.render("urls_new", templateVars);
   } else {
-    res.render("access_denied", templateVars);
+    res.redirect("/access_denied");
   }
 });
 
@@ -130,7 +130,7 @@ app.get("/urls/:shortURL", (req, res) => {
       res.render("urls_new", templateVars); // if URL doesn't exist
     }
   } else {
-    res.render("access_denied", templateVars);
+    res.redirect("/access_denied");
   }
 });
 
@@ -140,9 +140,35 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+// GET endpoints for error pages
+
+app.get("/access_denied", (req, res) => {
+  const userID = req.session["user_id"];
+  const templateVars = { 
+    user: userDatabase[userID]
+  };
+  res.render("access_denied", templateVars);
+});
+
+app.get("/register_error", (req, res) => {
+  const userID = req.session["user_id"];
+  const templateVars = { 
+    user: userDatabase[userID]
+  };
+  res.render("register_error", templateVars);
+});
+
+app.get("/login_error", (req, res) => {
+  const userID = req.session["user_id"];
+  const templateVars = { 
+    user: userDatabase[userID]
+  };
+  res.render("login_error", templateVars);
+});
+
 // user POST endpoints
 
-// add new user to userDatabase after they register
+// add new user to userDatabase after they register. if user exists or a field is blank then direct them to appropriate error page.
 app.post("/register", (req, res) => {
   const id = getNextID(userDatabase);
   const email = req.body.email;
@@ -155,11 +181,12 @@ app.post("/register", (req, res) => {
   };
 
   if (!email || !password || getUserByEmail(email, userDatabase)) {
-    res.status(400).end();
+    res.status(400);
+    res.redirect("/register_error");
   } else {
     userDatabase[id] = newUser;
     req.session["user_id"] = id;
-    res.redirect(`/urls`);
+    res.redirect("/urls");
   }
 });
 
@@ -172,7 +199,8 @@ app.post("/login", (req, res) => {
     req.session["user_id"] = getUserByEmail(email, userDatabase)["id"];
     res.redirect("/urls");
   } else {
-    res.status(403).end();
+    res.status(403);
+    res.redirect("/login_error");
   }
 });
 
