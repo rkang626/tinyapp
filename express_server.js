@@ -28,12 +28,16 @@ const urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
     userID: 1,
-    visits: 0
+    visits: 0,
+    visitors: [],
+    log: {}
   },
   "9sm5xK": {
     longURL: "http://www.google.com",
     userID: 2,
-    visits: 0
+    visits: 0,
+    visitors: [],
+    log: {}
   }
 };
 
@@ -137,8 +141,10 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     user: userDatabase[userID],
     urlVisits: urlDatabase[shortURL]["visits"],
+    urlVisitors: urlDatabase[shortURL]["visitors"].length,
+    urlLog: urlDatabase[shortURL]["log"],
     shortURL,
-    longURL,
+    longURL
   };
 
   if (!longURL) {
@@ -163,6 +169,18 @@ app.get("/u/:shortURL", (req, res) => {
     res.redirect("/bad_url");
   } else {
     urlDatabase[shortURL]["visits"]++;
+
+    const visitor_id = req.session["user_id"] || generateRandomString();
+    const pastVisitors = urlDatabase[shortURL]["visitors"];
+    if (!req.session["visitor_id"] && !pastVisitors.includes(visitor_id)) {
+      req.session["visitor_id"] = visitor_id;
+      urlDatabase[shortURL]["visitors"].push(visitor_id);
+    }
+
+    const currentdate = new Date(); 
+    const datetime = (currentdate.getMonth()+1) + "/" + currentdate.getDate() + "/" + currentdate.getFullYear() + " @ "  + currentdate.getHours() + ":"  + currentdate.getMinutes()  + ":"  + currentdate.getSeconds();
+    urlDatabase[shortURL]["log"][datetime] = visitor_id;
+
     res.redirect(longURL);
   }
 });
@@ -254,7 +272,9 @@ app.post("/urls", (req, res) => {
   const newURL = {
     longURL,
     userID,
-    visits: 0
+    visits: 0,
+    visitors: [],
+    log: {}
   };
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = newURL;
