@@ -27,11 +27,13 @@ app.use(methodOverride("_method"));
 const urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
-    userID: 1
+    userID: 1,
+    visits: 0
   },
   "9sm5xK": {
     longURL: "http://www.google.com",
-    userID: 2
+    userID: 2,
+    visits: 0
   }
 };
 
@@ -134,8 +136,9 @@ app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const templateVars = {
     user: userDatabase[userID],
+    urlVisits: urlDatabase[shortURL]["visits"],
     shortURL,
-    longURL
+    longURL,
   };
 
   if (!longURL) {
@@ -151,13 +154,15 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // direct all users to the corresponding "longURL"
 app.get("/u/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
   let longURL = undefined;
-  if (urlDatabase[req.params.shortURL]) {
-    longURL = urlDatabase[req.params.shortURL]["longURL"];
+  if (urlDatabase[shortURL]) {
+    longURL = urlDatabase[shortURL]["longURL"];
   }
   if (!longURL) {
     res.redirect("/bad_url");
   } else {
+    urlDatabase[shortURL]["visits"]++;
     res.redirect(longURL);
   }
 });
@@ -234,7 +239,7 @@ app.post("/login", (req, res) => {
   }
 });
 
-// clear user session when user loges out. redirect to the login page.
+// clear user session when user logs out. redirect to the login page.
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/login");
@@ -248,7 +253,8 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   const newURL = {
     longURL,
-    userID
+    userID,
+    visits: 0
   };
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = newURL;
